@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace WordRobot
 {
-    class Program
+    public partial class FormWord : Form
     {
         private static List<string> lineList = new List<string>();
 
@@ -14,40 +14,60 @@ namespace WordRobot
 
         private static Regex reg = new Regex(@"^[A-Za-z0-9]+$");
 
-        [STAThread]
-        static void Main(string[] args)
+        public FormWord()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormWord());
-            //FixData();
-            //SplitWords();
-            //Console.WriteLine("Over");
+            InitializeComponent();
         }
 
-        private static void FixData()
+        private void btnBrowse_Click(object sender, EventArgs e)
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory + "Data\\Data.txt";
-
-            StreamWriter sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "Data\\FixData.txt", false);
-
-            using (StreamReader sr = new StreamReader(path))
+            OpenFileDialog ofd = new OpenFileDialog
             {
+                Multiselect = false
+            };
+
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                txtPath.Text = ofd.FileName;
+            }
+        }
+
+        private void btnAnalysis_Click(object sender, EventArgs e)
+        {
+            FixData();
+            SplitWords();
+
+            MessageBox.Show("Over");
+        }
+
+        private void FixData()
+        {
+            string path = AppDomain.CurrentDomain.BaseDirectory + "\\Data";
+
+            string[] tempArr = null;
+
+            using (StreamReader sr = new StreamReader(txtPath.Text))
+            using (StreamWriter sw = new StreamWriter(AppDomain.CurrentDomain.BaseDirectory + "Data\\FixData.txt", false))
+            {
+                //2019-04-09 21:18:20 蒙奇D路飞: 我上次看视频不小瞄到
                 string line = string.Empty;
                 while (!sr.EndOfStream)
                 {
                     line = sr.ReadLine();
-                    if (line.Trim().StartsWith("【") || line.StartsWith(" 2017-") || string.IsNullOrWhiteSpace(line))
+                    //if (line.Trim().StartsWith("【") || line.StartsWith(" 2017-") || string.IsNullOrWhiteSpace(line))
+                    //{
+                    //    continue;
+                    //}
+                    tempArr = line.Split(':');
+                    if (tempArr.Length >= 4)
                     {
-                        continue;
+                        line = tempArr[3].Trim();
+                        lineList.Add(line.Replace(".", "").Replace("。", "").Replace(",", "").Replace("，", "").Replace("？", "").Replace("/", ""));
+                        sw.WriteLine(line);
                     }
-                    lineList.Add(line.Replace(".", "").Replace("。", "").Replace(",", "").Replace("，", "").Replace("？", "").Replace("/", ""));
 
-                    sw.WriteLine(line);
                 }
             }
-
-            sw.Close();
         }
 
         private static void SplitWords()
