@@ -44,6 +44,9 @@ namespace WordRobot
         {
             string path = AppDomain.CurrentDomain.BaseDirectory + "\\Data";
 
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
             string[] tempArr = null;
 
             using (StreamReader sr = new StreamReader(txtPath.Text))
@@ -62,6 +65,9 @@ namespace WordRobot
                     if (tempArr.Length >= 4)
                     {
                         line = tempArr[3].Trim();
+                        if (line.StartsWith("@") && line.Length > 100)
+                            continue;
+
                         lineList.Add(line.Replace(".", "").Replace("。", "").Replace(",", "").Replace("，", "").Replace("？", "").Replace("/", ""));
                         sw.WriteLine(line);
                     }
